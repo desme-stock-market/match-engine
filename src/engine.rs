@@ -6,7 +6,7 @@ use crate::{
     matcher::Matcher,
     model::{
         BookOrder, CancelReason, EngineEvent, IncomingOrder, OrderSide, OrderType, Price,
-        ProcessOrder, TimeInForce,
+        ProcessOrder, TimeInForce, TradeId,
     },
     policies::PolicyChecker,
     storage::BookSide,
@@ -39,8 +39,12 @@ impl MatchEngine {
             Err(event) => return smallvec![event],
         }
         match order.side {
-            OrderSide::Buy => Matcher::hard_match(&mut order, &mut self.asks, &mut self.next_trade_id),
-            OrderSide::Sell => Matcher::hard_match(&mut order, &mut self.bids, &mut self.next_trade_id),
+            OrderSide::Buy => {
+                Matcher::hard_match(&mut order, &mut self.asks, &mut self.next_trade_id)
+            }
+            OrderSide::Sell => {
+                Matcher::hard_match(&mut order, &mut self.bids, &mut self.next_trade_id)
+            }
         }
         .iter()
         .map(|trade| EngineEvent::TradeExecuted(*trade))
@@ -61,8 +65,12 @@ impl MatchEngine {
             Err(event) => return smallvec![event],
         };
         let mut executed_events: SmallVec<[EngineEvent; 16]> = match order.side {
-            OrderSide::Buy => Matcher::hard_match(&mut order, &mut self.asks, &mut self.next_trade_id),
-            OrderSide::Sell => Matcher::hard_match(&mut order, &mut self.bids, &mut self.next_trade_id),
+            OrderSide::Buy => {
+                Matcher::hard_match(&mut order, &mut self.asks, &mut self.next_trade_id)
+            }
+            OrderSide::Sell => {
+                Matcher::hard_match(&mut order, &mut self.bids, &mut self.next_trade_id)
+            }
         }
         .iter()
         .map(|trade| EngineEvent::TradeExecuted(*trade))
