@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::{cmp::Reverse, collections::BTreeMap};
 
 use rustc_hash::FxHashMap;
