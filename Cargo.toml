@@ -1,0 +1,18 @@
+[package]
+name = "match-engine"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.48.0", features = ["full"] }
+async-trait = { version = "0.1.89" }
+anyhow = { version = "1.0.100" }
+serde = { version = "1.0.228", features = ["derive"] }
+redis = { version = "1.0.1", features = [] }
+rustc-hash = { version = "2.1.1" }
+rust_decimal = { version = "1.39.0" }
+uuid = { version = "1.19.0", features = ["v4", "serde"] }
+smallvec = { version = "1.15.1" }
+
+[dev-dependencies]
+serial_test = "3.2.0"
