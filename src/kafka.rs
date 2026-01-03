@@ -1,15 +1,21 @@
 use anyhow::Result;
 use rdkafka::{
+    ClientConfig,
     consumer::{Consumer, StreamConsumer},
     message::Message,
-    ClientConfig,
+    producer::{FutureProducer, FutureRecord},
 };
+use smallvec::SmallVec;
 use tokio::sync::mpsc;
 
-use crate::model::IncomingOrder;
+use crate::model::{EngineEvent, IncomingOrder};
 
 pub struct KafkaConsumer {
     consumer: StreamConsumer,
+}
+
+pub struct KafkaProducer {
+    producer: FutureProducer,
 }
 
 impl KafkaConsumer {
@@ -48,6 +54,39 @@ impl KafkaConsumer {
                 }
             }
         }
+        Ok(())
+    }
+}
+
+impl KafkaProducer {
+    pub fn new(brokers: &str) -> Result<Self> {
+        let producer: FutureProducer = ClientConfig::new()
+            .set("bootstrap.servers", brokers)
+            .set("acks", "all")
+            .create()?;
+
+        Ok(KafkaProducer { producer })
+    }
+
+    pub async fn send_events(
+        &self,
+        topic: &str,
+        events: SmallVec<[EngineEvent; 16]>,
+    ) -> Result<()> {
+        if events.is_empty() {
+            return Ok(());
+        }
+
+        for event in events {
+            let payload = serde_json::to_vec(&event)?;
+            let record = FutureRecord::to(topic).key("").payload(&payload);
+
+            self.producer
+                .send(record, None)
+                .await
+                .map_err(|(e, _)| anyhow::anyhow!("Failed to send event to Kafka: {}", e))?;
+        }
+
         Ok(())
     }
 }
