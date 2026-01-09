@@ -37,12 +37,33 @@ pub enum CancelReason {
     FokLiquidityShortage,
 }
 
+impl std::fmt::Display for CancelReason {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CancelReason::UserRequest => write!(f, "UserRequest"),
+            CancelReason::IocExpired => write!(f, "IocExpired"),
+            CancelReason::FokLiquidityShortage => write!(f, "FokLiquidityShortage"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum RejectReason {
     PostOnlyViolation,
     InvalidPrice,
     InvalidAmount,
     SymbolNotFound,
+}
+
+impl std::fmt::Display for RejectReason {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RejectReason::PostOnlyViolation => write!(f, "PostOnlyViolation"),
+            RejectReason::InvalidPrice => write!(f, "InvalidPrice"),
+            RejectReason::InvalidAmount => write!(f, "InvalidAmount"),
+            RejectReason::SymbolNotFound => write!(f, "SymbolNotFound"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

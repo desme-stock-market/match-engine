@@ -1,5 +1,6 @@
 mod engine;
 mod kafka;
+mod logger;
 mod matcher;
 mod model;
 mod policies;
@@ -11,6 +12,7 @@ use tokio::sync::mpsc;
 
 use crate::engine::MatchEngine;
 use crate::kafka::{KafkaConsumer, KafkaProducer};
+use crate::logger::Log;
 use crate::model::{EngineEvent, IncomingOrder};
 
 #[tokio::main]
@@ -36,11 +38,17 @@ async fn main() -> Result<()> {
         let batch_size = 16;
         let flush_interval = tokio::time::Duration::from_millis(100);
         let mut flush_timer = tokio::time::interval(flush_interval);
+        let mut order_count = 0;
 
         loop {
             tokio::select! {
                 Some(order) = rx.recv() => {
+                    order_count += 1;
+                    Log::order(order_count, &order);
+                    
                     let events = match_engine.process(order);
+                    Log::events(&events);
+                    
                     events_batch.extend(events);
 
                     if events_batch.len() >= batch_size {
