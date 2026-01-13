@@ -20,6 +20,16 @@ pub enum TimeInForce {
     FOK, // Fill Or Kill
 }
 
+#[allow(dead_code)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum SelfTradeAction {
+    CancelBoth,
+    CancelMaker,
+    CancelTaker,
+    Allow,
+    Skip,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum OrderType {
     Market,

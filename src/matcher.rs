@@ -3,7 +3,7 @@ use std::cmp::min;
 use smallvec::SmallVec;
 
 use crate::{
-    model::{OrderSide, ProcessOrder, Trade, TradeId},
+    model::{BookOrder, OrderSide, ProcessOrder, SelfTradeAction, Trade, TradeId},
     policies::PolicyChecker,
     storage::{BookSide, PriceKey},
 };
@@ -17,8 +17,19 @@ impl Matcher {
         next_trade_id: &mut TradeId,
     ) -> SmallVec<[Trade; 16]> {
         let mut executed_trades: SmallVec<[Trade; 16]> = SmallVec::new();
+
+        let filter = |order: &BookOrder| {
+            let self_trade_action =
+                PolicyChecker::check_self_trade(aggressor.user_id, order.user_id);
+            match self_trade_action {
+                SelfTradeAction::Skip => false,
+                SelfTradeAction::Allow => true,
+                _ => true,
+            }
+        };
+
         while aggressor.amount > 0 {
-            let maker_order_ref = match book.peek_best() {
+            let maker_order_ref = match book.peek_best(filter) {
                 Some(o) => o,
                 None => break,
             };
@@ -34,7 +45,7 @@ impl Matcher {
                 break;
             }
 
-            let mut maker_order = match book.pop_best() {
+            let mut maker_order = match book.pop_best(filter) {
                 Some(o) => o,
                 None => break,
             };

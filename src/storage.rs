@@ -67,12 +67,24 @@ impl<K: PriceKey> BookSide<K> {
             .map(|(price_key, _)| price_key.as_price())
     }
 
-    pub fn peek_best(&self) -> Option<&BookOrder> {
-        self.orders.values().next()
+    pub fn peek_best<F>(&self, filter: F) -> Option<&BookOrder>
+    where
+        F: Fn(&BookOrder) -> bool,
+    {
+        self.orders.values().find(|order| filter(order))
     }
 
-    pub fn pop_best(&mut self) -> Option<BookOrder> {
-        let (_, order) = self.orders.pop_first()?;
+    pub fn pop_best<F>(&mut self, filter: F) -> Option<BookOrder>
+    where
+        F: Fn(&BookOrder) -> bool,
+    {
+        let key = self
+            .orders
+            .iter()
+            .find(|(_, order)| filter(order))
+            .map(|(key, _)| *key)?;
+        let order = self.orders.remove(&key)?;
+
         self.liquidity_index
             .remove_liquidity(K::from_price(order.price), order.amount);
         self.index.remove(order.order_id);

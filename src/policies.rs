@@ -1,7 +1,11 @@
 use anyhow::Result;
+use uuid::Uuid;
 
 use crate::{
-    model::{CancelReason, EngineEvent, OrderSide, Price, ProcessOrder, RejectReason, TimeInForce},
+    model::{
+        CancelReason, EngineEvent, OrderSide, Price, ProcessOrder, RejectReason, SelfTradeAction,
+        TimeInForce,
+    },
     storage::{BookSide, PriceKey},
 };
 
@@ -66,5 +70,12 @@ impl PolicyChecker {
             });
         }
         Ok(())
+    }
+
+    pub fn check_self_trade(agressor_user_id: Uuid, order_user_id: Uuid) -> SelfTradeAction {
+        if agressor_user_id == order_user_id {
+            return SelfTradeAction::Skip;
+        }
+        SelfTradeAction::Allow
     }
 }
